@@ -241,3 +241,20 @@ function TFIDF(documents){
   // TODO: Instead of returning these max sentences, find and highlight them
   return ("<br>" + "•" + max_sentence + "<br><br>" + "•" + max2Sent + "<br><br>" + "•" + max3Sent);
 }
+var sites = ["google", "amazon", "microsoft", "cisco"];
+var tos = {
+  google: "https://policies.google.com/terms?hl=en",
+  amazon:
+    "https://www.amazon.com/gp/help/customer/display.html/ref=hp_596184_terms?nodeId=14309551",
+  microsoft: "https://www.microsoft.com/en-us/servicesagreement",
+  cisco: "https://www.cisco.com/c/en/us/about/legal/terms-conditions.html"
+};
+
+let link = document.querySelector("a");
+chrome.storage.sync.get("webSite", function(data) {
+  link.setAttribute("href", tos[data.webSite]);
+  link.innerHTML = data.webSite;
+});
+link.addEventListener("click", function() {
+  chrome.tabs.create({ url: link.getAttribute("href") });
+});
