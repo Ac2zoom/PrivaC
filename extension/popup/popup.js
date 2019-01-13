@@ -5,8 +5,8 @@
 "use strict";
 
 // TODO: Generalize to take list of keywords
-function generateHighlights(keyword) {
-  // TODO: Loop through all occurrences of term
+function generateHighlights(keywords) {
+  // Loop through all occurrences of term
   return "\nString.prototype.splice = function(start, delCount, newSubStr) {\n" +
     "return this.slice(0, start) + newSubStr + this.slice(start + Math.abs(delCount));\n" +
     "};\n" +
