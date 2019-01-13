@@ -4,13 +4,36 @@
 
 "use strict";
 
+// TODO: Generalize to take list of keywords
+function generateHighlights(keyword) {
+  // TODO: Loop through all occurrences of term
+  return "\nString.prototype.splice = function(start, delCount, newSubStr) {\n" +
+    "return this.slice(0, start) + newSubStr + this.slice(start + Math.abs(delCount));\n" +
+    "};\n" +
+    "function getIndicesOf(searchStr, str, caseSensitive) {\n" +
+      "var searchStrLen = searchStr.length;\n" +
+      "if (searchStrLen == 0) {\n" +
+          "return [];\n" +
+      "}\n" +
+      "var startIndex = 0, index, indices = [];\n" +
+      "if (!caseSensitive) {\n" +
+          "str = str.toLowerCase();\n" +
+          "searchStr = searchStr.toLowerCase();\n" +
+      "}\n" +
+      "while ((index = str.indexOf(searchStr, startIndex)) > -1) {\n" +
+          "indices.push(index);\n" +
+          "startIndex = index + searchStrLen;\n" +
+      "}\n" +
+      "return indices;\n" +
+    "}" +
+    "getIndicesOf(" + keyword + ", document.body.innerHTML).forEach((index) => {\n" +
+      "document.body.innerHTML = document.body.innerHTML.splice(index, 0, '<mark>');" + 
+      "document.body.innerHTML = document.body.innerHTML.splice(index + " + keyword.length + ", 0, '</mark>');" +
+    "});";
+}
+
 let changeColor = document.getElementById("changeColor");
 // From https://stackoverflow.com/questions/4313841/insert-a-string-at-a-specific-index
-const editMethod = "\nString.prototype.splice = function(start, delCount, newSubStr) {\n" +
-  "return this.slice(0, start) + newSubStr + this.slice(start + Math.abs(delCount));\n" +
-  "};\n" +
-  "document.body.innerHTML = document.body.innerHTML.splice(document.body.innerHTML.search('Terms of Service'), 0, '<mark>');" + 
-  "document.body.innerHTML = document.body.innerHTML.splice(document.body.innerHTML.search('Terms of Service') + 16, 0, '</mark>');";
 chrome.storage.sync.get("color", function(data) {
   changeColor.style.backgroundColor = data.color;
   changeColor.setAttribute("value", data.color);
@@ -19,7 +42,8 @@ changeColor.onclick = function(element) {
   let color = element.target.value;
   chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
     chrome.tabs.executeScript(tabs[0].id, {
-      code: 'document.body.style.backgroundColor = "' + color + '";' + editMethod
+      // TODO: Get appropriate terms from backend, highlight iteratively
+      code: 'document.body.style.backgroundColor = "' + color + '";' + generateHighlights("stuff");
     });
   });
 };
