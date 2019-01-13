@@ -4,16 +4,20 @@
 
 "use strict";
 
-let changeColor = document.getElementById("changeColor");
-chrome.storage.sync.get("color", function(data) {
-  changeColor.style.backgroundColor = data.color;
-  changeColor.setAttribute("value", data.color);
-});
-changeColor.onclick = function(element) {
-  let color = element.target.value;
-  chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-    chrome.tabs.executeScript(tabs[0].id, {
-      code: 'document.body.style.backgroundColor = "' + color + '";'
-    });
-  });
+var sites = ["google", "amazon", "microsoft", "cisco"];
+var tos = {
+  google: "https://policies.google.com/terms?hl=en",
+  amazon:
+    "https://www.amazon.com/gp/help/customer/display.html/ref=hp_596184_terms?nodeId=14309551",
+  microsoft: "https://www.microsoft.com/en-us/servicesagreement",
+  cisco: "https://www.cisco.com/c/en/us/about/legal/terms-conditions.html"
 };
+
+let link = document.querySelector("a");
+chrome.storage.sync.get("webSite", function(data) {
+  link.setAttribute("href", tos[data.webSite]);
+  link.innerHTML = data.webSite;
+});
+link.addEventListener("click", function() {
+  chrome.tabs.create({ url: link.getAttribute("href") });
+});
