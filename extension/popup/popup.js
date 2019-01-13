@@ -5,9 +5,16 @@
 "use strict";
 
 // TODO: Generalize to take list of keywords
-function generateHighlights(keywords) {
-  // Loop through all occurrences of term
-  return "\nString.prototype.splice = function(start, delCount, newSubStr) {\n" +
+function generateHighlights() {
+  // Make call to API
+  console.log("Hello");
+  var x = new XMLHttpRequest();
+  // TODO: Escape?
+  var params = "text=" + prettify(document.body.innerHTML);
+  x.open('POST', 'http://tos.ssh.uno/locs');
+  x.onload = function() {
+    alert(x.responseText);
+    return "\nString.prototype.splice = function(start, delCount, newSubStr) {\n" +
     "return this.slice(0, start) + newSubStr + this.slice(start + Math.abs(delCount));\n" +
     "};\n" +
     "function getIndicesOf(searchStr, str, caseSensitive) {\n" +
@@ -26,10 +33,13 @@ function generateHighlights(keywords) {
       "}\n" +
       "return indices;\n" +
     "}" +
-    "getIndicesOf(" + keyword + ", document.body.innerHTML).forEach((index) => {\n" +
+    "getIndicesOf(" + x.responseJSON[0]["locs"][0] + ", document.body.innerHTML).forEach((index) => {\n" +
       "document.body.innerHTML = document.body.innerHTML.splice(index, 0, '<mark>');" + 
-      "document.body.innerHTML = document.body.innerHTML.splice(index + " + keyword.length + ", 0, '</mark>');" +
+      "document.body.innerHTML = document.body.innerHTML.splice(index + " + x.responseJSON[0]["locs"][0].length + ", 0, '</mark>');" +
     "});";
+  };
+  x.send(params);
+  // Loop through all occurrences of term
 }
 
 let changeColor = document.getElementById("changeColor");
@@ -43,13 +53,14 @@ changeColor.onclick = function(element) {
   chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
     chrome.tabs.executeScript(tabs[0].id, {
       // TODO: Get appropriate terms from backend, highlight iteratively
-      code: 'document.body.style.backgroundColor = "' + color + '";' + generateHighlights("stuff");
+      code: 'document.body.style.backgroundColor = "' + color + '";' + generateHighlights()
     });
   });
 };
 
 // From https://github.com/brandonskerritt/tldr-News:
 function prettify(document){
+  document = document.replace(/<\/?[^>]+(>|$)/g, "");
   // Turns an array of words into lowercase and removes stopwords
   const stopwords = ["a", "", "share", "linkthese", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any","are","aren't","as","at","be","because","been","before","being","below","between","both","but","by","can't","cannot","could","couldn't","did","didn't","do","does","doesn't","doing","don't","down","during","each","few","for","from","further","had","hadn't","has","hasn't","have","haven't","having","he","he'd","he'll","he's","her","here","here's","hers","herself","him","himself","his","how","how's","i","i'd","i'll","i'm","i've","if","in","into","is","isn't","it","it's","its","itself","let's","me","more","most","mustn't","my","myself","no","nor","not","of","off","on","once","only","or","other","ought","our","ours","ourselves","out","over","own","same","shan't","she","she'd","she'll","she's","should","shouldn't","so","some","such","than","that","that's","the","their","theirs","them","themselves","then","there","there's","these","they","they'd","they'll","they're","they've","this","those","through","to","too","under","until","up","very","was","wasn't","we","we'd","we'll","we're","we've","were","weren't","what","what's","when","when's","where","where's","which","while","who","who's","whom","why","why's","with","won't","would","wouldn't","you","you'd","you'll","you're","you've","your","yours","yourself","yourselves", "this"];
   // turn document into lowercase words, remove all stopwords
